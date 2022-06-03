@@ -184,21 +184,6 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
 
     if data_store is None:
         data_store = []
-    
-    # capture newline characters as if the user wants to start new units
-    newline_ls = txt.split("\n")
-    if len(newline_ls) > 1:
-        word_ind = 0
-        for line in newline_ls[:-1]:
-            line_word_ls = line.split(" ")
-            word_ind += len(line_word_ls)
-
-            if word_ind not in data_store:
-                data_store.append(word_ind)
-                data_store.sort()
-    
-    # now treat newline characters like a space
-    txt = txt.replace("\n", " ")
 
     # if a word has been clicked, update the layout of the words
     if word_click_ls.count(1):
@@ -210,6 +195,24 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
         data_store.pop(break_click_ls.index(1))
         data_store.sort()
 
+    # capture newline characters as if the user wants to start new units
+    # do not put these newline characters in data store, 
+    # just read where they are from the text
+    newline_ls = txt.split("\n")
+    unit_ls = data_store.copy()
+    if len(newline_ls) > 1:
+        word_ind = 0
+        for line in newline_ls[:-1]:
+            line_word_ls = line.split(" ")
+            word_ind += len(line_word_ls)
+
+            if word_ind not in data_store:
+                unit_ls.append(word_ind)
+                unit_ls.sort()
+    
+    # now treat newline characters like a space
+    txt = txt.replace("\n", " ")
+
     # build the words shown in the break down tab
     word_html_ls = []
     study_html_ls = []
@@ -217,7 +220,7 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
     if txt:
         words_ls = txt.split(" ")
         for i, word in enumerate(words_ls):
-            if i in data_store:
+            if i in unit_ls:
                 
                 # add an "X" to prepare for a new unit
                 word_html_ls.append(html.Div(dbc.Button(
@@ -240,7 +243,7 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
     
         # build the text for the study & test tabs
         unit_start = 0
-        for i, unit_end in enumerate(data_store):
+        for i, unit_end in enumerate(unit_ls):
 
             # study text
             unit_str = " ".join(words_ls[unit_start:unit_end])
@@ -264,7 +267,7 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
             )
 
         # add the last unit for study & test tabs
-        i = len(data_store)
+        i = len(unit_ls)
         unit_str = " ".join(words_ls[unit_start:])
         study_html_ls.append(
             dbc.Row([
