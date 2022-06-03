@@ -26,7 +26,7 @@ app.layout = dbc.Container(
 
         dbc.NavbarSimple(
             children=[
-                dbc.NavItem(dbc.NavLink("Github", href="#")),
+                dbc.NavItem(dbc.NavLink("Github", href="https://github.com/buckeye17/reciteit")),
             ],
             brand="Recite It!",
             brand_href="#",
