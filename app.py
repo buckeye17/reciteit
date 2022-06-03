@@ -352,7 +352,7 @@ def test_checking(test_txt, check_capitalization, check_punctuation, test_id, tx
             return [None, None, icon]
 
         elif unit_txt[:n_char] == test_txt:
-            icon_style["color"] = "Orange"
+            icon_style["color"] = "White"
             icon = html.Div(className="fa-solid fa-face-meh", title="So far so good", style=icon_style)
             return [None, None, icon]
 
