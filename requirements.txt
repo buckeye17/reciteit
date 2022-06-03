@@ -1,5 +1,6 @@
 dash==2.0.0
 dash-bootstrap-components==1.1.0
+werkzeug==2.0.3
 
 # add what Heroku needs:
 gunicorn
