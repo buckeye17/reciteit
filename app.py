@@ -3,9 +3,10 @@ import string
 
 # third party Python packages
 import dash
-import dash_html_components as html
-import dash_core_components as dcc
+from dash import html
+from dash import dcc
 import dash_bootstrap_components as dbc
+import dash_mantine_components as dmc
 from dash.dependencies import Input, Output, State, MATCH, ALL
 
 app = dash.Dash(__name__)
@@ -26,7 +27,14 @@ app.layout = dbc.Container(
 
         dbc.NavbarSimple(
             children=[
-                dbc.NavItem(dbc.NavLink("Github", href="https://github.com/buckeye17/reciteit")),
+                dbc.NavItem(dbc.NavLink(
+                    html.Div(
+                        className="fa-brands fa-github",
+                        title="Github",
+                        style={"fontSize": 30}
+                    ),
+                    href="https://github.com/buckeye17/reciteit"
+                )),
             ],
             brand="Recite It!",
             brand_href="#",
@@ -35,28 +43,6 @@ app.layout = dbc.Container(
         ),
 
         dbc.Tabs([
-
-            # # Tips tab
-            # dbc.Tab(
-            #     html.Div(
-            #         dbc.Container(
-            #             [
-            #                 html.P(
-            #                     "Study the text until you're ready to type it",
-            #                     className="lead",
-            #                 ),
-            #                 html.Hr(className="my-2"),
-            #                 html.P(""),
-            #             ],
-            #             fluid=True,
-            #             className="py-3",
-            #         ),
-            #         className="p-3 bg-light rounded-3",
-            #     ),
-            #     id="tips_tab",
-            #     tab_id="tips_tab",
-            #     label="Tips"
-            # ),
 
             # Input tab
             dbc.Tab(
@@ -147,11 +133,11 @@ app.layout = dbc.Container(
                     justify="start",
                     style={"margin-bottom": 15}),
                     html.Div(
-                        dbc.Container(
+                        dmc.Container(
                             [],
                             id="test_container",
                             fluid=True,
-                            className="py-3",
+                            # className="py-3",
                         ),
                         className="p-3 bg-light rounded-3",
                     ),
@@ -279,11 +265,13 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
                         html.Span(f"Unit {len(test_html_ls) + 1}"),
                         html.Span(id={"index": i, "type": "test_icon"}),
                     ], width=1),
-                    dbc.Col(dbc.Textarea(
+                    dbc.Col(dmc.Textarea(
                         id=test_element_id,
-                        rows=1,
+                        minRows=1,
+                        autosize=True,
                         style={"margin": 10},
-                        className="input-sizer stacked")),
+                        #className="input-sizer stacked"
+                    )),
                 ], align="center", className="g-0") # zero gutter between columns
             )
 
@@ -299,6 +287,7 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
 
         # add the last unit for study & test tabs
         i = len(unit_ls)
+        test_element_id = {"index": i, "type": "test"}
         unit_str = " ".join(words_ls[unit_start:])
         study_html_ls.append(
             dbc.Row([
@@ -313,7 +302,13 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
                     html.Span(f"Unit {len(test_html_ls) + 1}"),
                     html.Span(id={"index": i, "type": "test_icon"}),
                 ], width=1),
-                dbc.Col(dbc.Textarea(id={"index": i, "type": "test"}, rows=1, style={"margin": 10})),
+                dbc.Col(dmc.Textarea(
+                    id=test_element_id,
+                    minRows=1,
+                    autosize=True,
+                    style={"margin": 10},
+                    #className="input-sizer stacked"
+                )),
             ], align="center", className="g-0") # zero gutter between columns
         )
 
@@ -379,7 +374,7 @@ def test_checking(test_txt, check_capitalization, check_punctuation, clear_click
         n_char = len(test_txt)
 
         icon_style = {
-            "fontSize": 30,
+            "fontSize": 20,
             "margin-left": 20,
         }
         
@@ -388,18 +383,21 @@ def test_checking(test_txt, check_capitalization, check_punctuation, clear_click
         # more informative for: exact match, incomplete match, error feedback
         # emojis are documented here: https://fontawesome.com/search?q=emojis&m=free&s=solid%2Cbrands
         if test_txt == unit_txt:
-            icon_style["color"] = "Green"
-            icon = html.Div(className="fa-solid fa-face-smile", title="Perfect!", style=icon_style)
+            icon_style["color"] = "Yellow"
+            # icon = html.Div(className="fa-solid fa-face-smile", title="Perfect!", style=icon_style)
+            icon = html.Div(className="fa-solid fa-star", title="Perfect!", style=icon_style)
             return [test_txt_out, None, None, icon]
 
         elif unit_txt[:n_char] == test_txt:
             icon_style["color"] = "White"
-            icon = html.Div(className="fa-solid fa-face-meh", title="So far so good", style=icon_style)
+            # icon = html.Div(className="fa-solid fa-face-meh", title="So far so good", style=icon_style)
+            icon = html.Div(className="fa-solid fa-star-half-stroke", title="So far so good", style=icon_style)
             return [test_txt_out, None, None, icon]
 
         else:
             icon_style["color"] = "Red"
-            icon = html.Div(className="fa-solid fa-face-sad-tear", title="Doh, you made a mistake", style=icon_style)
+            # icon = html.Div(className="fa-solid fa-face-sad-tear", title="Doh, you made a mistake", style=icon_style)
+            icon = html.Div(className="fa-solid fa-hand", title="Doh, you made a mistake", style=icon_style)
             return [test_txt_out, None, None, icon]
         
     else:
@@ -424,4 +422,4 @@ def get_unit_breaks(txt, data_store):
     return unit_ls
 
 if __name__ == "__main__":
-    app.run_server(host="0.0.0.0", debug=True)
+    app.run_server(host="0.0.0.0", debug=False)
