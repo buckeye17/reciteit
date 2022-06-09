@@ -61,7 +61,7 @@ app.layout = dbc.Container(
             # Input tab
             dbc.Tab(
                 [
-                    dbc.Row([
+                    dbc.Container(dbc.Row([
                         dbc.Col([
                             dbc.Textarea(
                                 value="",
@@ -71,11 +71,11 @@ app.layout = dbc.Container(
                                 style={"margin-top": "15px", "height": "65vh"},
                             ),
                         ]),
-                    ]),
+                    ])),
                 ],
                 id="input_tab",
                 tab_id="input_tab",
-                label="Input",
+                label="1. Input Text",
             ),
 
             # Break Down tab
@@ -97,7 +97,7 @@ app.layout = dbc.Container(
                 ),
                 id="setup_tab",
                 tab_id="setup_tab",
-                label="Break Down",
+                label="2. Break It Down",
                 disabled=True
             ),
 
@@ -120,7 +120,7 @@ app.layout = dbc.Container(
                 ),
                 id="study_tab",
                 tab_id="study_tab",
-                label="Study",
+                label="3. Study It",
                 disabled=True
             ),
 
@@ -132,13 +132,20 @@ app.layout = dbc.Container(
                             id="capitalization-switch",
                             label="Check capitalization",
                             value=False,
-                        ), width=3),
+                        ), width=2),
                         dbc.Col(dbc.Switch(
                             id="punctuation-switch",
                             label="Check punctuation",
                             value=False,
-                        ), width=3),
-                    ], justify="start"),
+                        ), width=2),
+                        dbc.Col(dbc.Button(
+                            "Clear",
+                            color="dark",
+                            id="test-clear",
+                        ), width=2),
+                    ],
+                    justify="start",
+                    style={"margin-bottom": 15}),
                     html.Div(
                         dbc.Container(
                             [],
@@ -151,7 +158,7 @@ app.layout = dbc.Container(
                 ],
                 id="test_tab",
                 tab_id="test_tab",
-                label="Test",
+                label="4. Recite It",
                 disabled=True
             ),
         ],
@@ -163,7 +170,8 @@ app.layout = dbc.Container(
 
 
 @app.callback(
-    [Output("setup_tab", "disabled"),
+    [Output("input_text", "value"),
+     Output("setup_tab", "disabled"),
      Output("study_tab", "disabled"),
      Output("test_tab", "disabled"),
      Output("setup_txt_container", "children"),
@@ -192,23 +200,31 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
     
     # if an "X" has been clicked, update the layout of the words
     if break_click_ls.count(1):
-        data_store.pop(break_click_ls.index(1))
-        data_store.sort()
+        unit_ls = get_unit_breaks(txt, data_store)
+        if unit_ls[break_click_ls.index(1)] in data_store:
+            # break click corresponds to a prior Break Down event, not a newline character 
+            data_store.pop(break_click_ls.index(1))
+            data_store.sort()
 
-    # capture newline characters as if the user wants to start new units
-    # do not put these newline characters in data store, 
-    # just read where they are from the text
-    newline_ls = txt.split("\n")
-    unit_ls = data_store.copy()
-    if len(newline_ls) > 1:
-        word_ind = 0
-        for line in newline_ls[:-1]:
-            line_word_ls = line.split(" ")
-            word_ind += len(line_word_ls)
+        else:
+            # break click corresponds to a newline character, not a prior Break Down event
+            # find the ith line break in txt
+            occurrence = unit_ls[break_click_ls.index(1)]
+            ind = -1
+            for i in range(0, occurrence):
+                space_ind = txt.find(" ", ind + 1)
+                if not space_ind:
+                    space_ind = len(txt)
 
-            if word_ind not in data_store:
-                unit_ls.append(word_ind)
-                unit_ls.sort()
+                nl_ind = txt.find("\n", ind + 1)
+                if not nl_ind:
+                    nl_ind = len(txt)
+                ind = min(space_ind, nl_ind)
+
+            txt = txt[:ind] + txt[ind + 1:]
+
+    txt_out = txt
+    unit_ls = get_unit_breaks(txt_out, data_store)
     
     # now treat newline characters like a space
     txt = txt.replace("\n", " ")
@@ -256,14 +272,29 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
             unit_start = unit_end
 
             # test inputs
+            test_element_id = {"index": i, "type": "test"}
             test_html_ls.append(
                 dbc.Row([
                     dbc.Col([
                         html.Span(f"Unit {len(test_html_ls) + 1}"),
                         html.Span(id={"index": i, "type": "test_icon"}),
                     ], width=1),
-                    dbc.Col(dbc.Textarea(id={"index": i, "type": "test"}, rows=1, style={"margin": 10})),
+                    dbc.Col(dbc.Textarea(
+                        id=test_element_id,
+                        rows=1,
+                        style={"margin": 10},
+                        className="input-sizer stacked")),
                 ], align="center", className="g-0") # zero gutter between columns
+            )
+
+            # create client callback for expanding text area as line wrapping occurs
+            dash.clientside_callback(
+                """function(id, value) {
+                    document.getElementById(id).parentNode.dataset.value = value
+                    return window.dash_clientside.no_update
+                }""",
+                Output(test_element_id, "className"),
+                [Input(test_element_id, "id"), Input(test_element_id, "value")]
             )
 
         # add the last unit for study & test tabs
@@ -286,25 +317,35 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
             ], align="center", className="g-0") # zero gutter between columns
         )
 
-    return setup_disabled, study_disabled, test_disabled, word_html_ls, study_html_ls, test_html_ls, data_store
+    return txt_out, setup_disabled, study_disabled, test_disabled, word_html_ls, study_html_ls, test_html_ls, data_store
 
 @app.callback(
-    [Output({"index": MATCH, "type": "test"}, "valid"),
+    [Output({"index": MATCH, "type": "test"}, "value"),
+     Output({"index": MATCH, "type": "test"}, "valid"),
      Output({"index": MATCH, "type": "test"}, "invalid"),
      Output({"index": MATCH, "type": "test_icon"}, "children")],
     [Input({"index": MATCH, "type": "test"}, "value"),
      Input("capitalization-switch", "value"),
-     Input("punctuation-switch", "value")],
+     Input("punctuation-switch", "value"),
+     Input("test-clear", "n_clicks")],
     [State({"index": MATCH, "type": "test"}, "id"),
      State("input_text", "value"),
      State('memory-output', 'data')]
 )
-def test_checking(test_txt, check_capitalization, check_punctuation, test_id, txt, data_store):
+def test_checking(test_txt, check_capitalization, check_punctuation, clear_clicks, test_id, txt, data_store):
+
+    ctx = dash.callback_context
+    trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
+    if trigger_id == "test-clear":
+        return ["", None, None, None]
+
+    unit_ls = get_unit_breaks(txt, data_store)
 
     # treat new lines like a space
     txt = txt.replace("\n", " ")
 
     # format text according to desired checking
+    test_txt_out = test_txt
     if not check_capitalization:
         if txt:
             txt = txt.lower()
@@ -326,13 +367,13 @@ def test_checking(test_txt, check_capitalization, check_punctuation, test_id, tx
         if test_id["index"] == 0:
             unit_start = 0
         else:
-            unit_start = data_store[test_id["index"] - 1]
+            unit_start = unit_ls[test_id["index"] - 1]
         
         # determine unit end character index
-        if test_id["index"] == len(data_store):
+        if test_id["index"] == len(unit_ls):
             unit_end = len(word_ls)
         else:
-            unit_end = data_store[test_id["index"]]
+            unit_end = unit_ls[test_id["index"]]
         
         unit_txt = " ".join(word_ls[unit_start:unit_end])
         n_char = len(test_txt)
@@ -349,20 +390,38 @@ def test_checking(test_txt, check_capitalization, check_punctuation, test_id, tx
         if test_txt == unit_txt:
             icon_style["color"] = "Green"
             icon = html.Div(className="fa-solid fa-face-smile", title="Perfect!", style=icon_style)
-            return [None, None, icon]
+            return [test_txt_out, None, None, icon]
 
         elif unit_txt[:n_char] == test_txt:
             icon_style["color"] = "White"
             icon = html.Div(className="fa-solid fa-face-meh", title="So far so good", style=icon_style)
-            return [None, None, icon]
+            return [test_txt_out, None, None, icon]
 
         else:
             icon_style["color"] = "Red"
             icon = html.Div(className="fa-solid fa-face-sad-tear", title="Doh, you made a mistake", style=icon_style)
-            return [None, None, icon]
+            return [test_txt_out, None, None, icon]
         
     else:
-        return [None, None, None]
+        return ["", None, None, None]
+
+def get_unit_breaks(txt, data_store):
+    # capture newline characters as if the user wants to start new units
+    # these newline characters are not kpt in data store, 
+    # they are just read where they are from the text
+    newline_ls = txt.split("\n")
+    unit_ls = data_store.copy()
+    if len(newline_ls) > 1:
+        word_ind = 0
+        for line in newline_ls[:-1]:
+            line_word_ls = line.split(" ")
+            word_ind += len(line_word_ls)
+
+            if word_ind not in data_store:
+                unit_ls.append(word_ind)
+                unit_ls.sort()
+    
+    return unit_ls
 
 if __name__ == "__main__":
-    app.run_server(host="0.0.0.0", debug=False)
+    app.run_server(host="0.0.0.0", debug=True)
