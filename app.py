@@ -126,17 +126,17 @@ app.layout = dbc.Container(
                             id="capitalization-switch",
                             label="Check capitalization",
                             value=False,
-                        ), width=2),
+                        ), md=5, width=2),
                         dbc.Col(dbc.Switch(
                             id="punctuation-switch",
                             label="Check punctuation",
                             value=False,
-                        ), width=2),
+                        ), md=5, width=2),
                         dbc.Col(dbc.Button(
                             "Clear",
                             color="dark",
                             id="test-clear",
-                        ), width=2),
+                        ), md=2, width=2),
                     ],
                     justify="start",
                     style={"margin-bottom": 15}),
@@ -259,7 +259,7 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
             unit_str = " ".join(words_ls[unit_start:unit_end])
             study_html_ls.append(
                 dbc.Row([
-                    dbc.Col(f"Unit {len(study_html_ls) + 1}", width=1),
+                    dbc.Col(f"Unit {len(study_html_ls) + 1}", md=3, width=1),
                     dbc.Col(html.P(unit_str))
                 ], align="center")
             )
@@ -272,7 +272,7 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
                     dbc.Col([
                         html.Span(f"Unit {len(test_html_ls) + 1}"),
                         html.Span(id={"index": i, "type": "test_icon"}),
-                    ], width=1),
+                    ], md=4, width=1),
                     dbc.Col(dmc.Textarea(
                         id=test_element_id,
                         minRows=1,
