@@ -14,7 +14,15 @@ server = app.server
 
 # Create app
 FONT_AWESOME = "https://use.fontawesome.com/releases/v6.0.0/css/all.css"
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG, FONT_AWESOME])
+app = dash.Dash(
+    __name__,
+    external_stylesheets=[dbc.themes.CYBORG, FONT_AWESOME],
+    title="Recite It!",
+    meta_tags=[{
+        "name": "viewport",
+        "content": "width=device-width, initial-scale=1"
+    }]
+)
 server = app.server
 
 # Define Layout
