@@ -259,7 +259,7 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
             unit_str = " ".join(words_ls[unit_start:unit_end])
             study_html_ls.append(
                 dbc.Row([
-                    dbc.Col(f"Unit {len(study_html_ls) + 1}", md=3, width=1),
+                    dbc.Col(f"Unit {len(study_html_ls) + 1}", width="auto"),
                     dbc.Col(html.P(unit_str))
                 ], align="center")
             )
@@ -272,7 +272,7 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
                     dbc.Col([
                         html.Span(f"Unit {len(test_html_ls) + 1}"),
                         html.Span(id={"index": i, "type": "test_icon"}),
-                    ], md=4, width=1),
+                    ], width="auto"),
                     dbc.Col(dmc.Textarea(
                         id=test_element_id,
                         minRows=1,
@@ -299,7 +299,7 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
         unit_str = " ".join(words_ls[unit_start:])
         study_html_ls.append(
             dbc.Row([
-                dbc.Col(f"Unit {len(study_html_ls) + 1}", width=1),
+                dbc.Col(f"Unit {len(study_html_ls) + 1}", width="auto"),
                 dbc.Col(html.P(unit_str))
             ], align="center")
         )
@@ -309,7 +309,7 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
                 dbc.Col([
                     html.Span(f"Unit {len(test_html_ls) + 1}"),
                     html.Span(id={"index": i, "type": "test_icon"}),
-                ], width=1),
+                ], width="auto"),
                 dbc.Col(dmc.Textarea(
                     id=test_element_id,
                     minRows=1,
