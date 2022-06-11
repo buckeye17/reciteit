@@ -9,9 +9,6 @@ import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from dash.dependencies import Input, Output, State, MATCH, ALL
 
-app = dash.Dash(__name__)
-server = app.server
-
 # Create app
 FONT_AWESOME = "https://use.fontawesome.com/releases/v6.0.0/css/all.css"
 app = dash.Dash(
@@ -145,7 +142,6 @@ app.layout = dbc.Container(
                             [],
                             id="test_container",
                             fluid=True,
-                            # className="py-3",
                         ),
                         className="p-3 bg-light rounded-3",
                     ),
@@ -236,7 +232,6 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
                 word_html_ls.append(html.Div(dbc.Button(
                     "X",
                     color="dark",
-                    # outline=True,
                     size="sm",
                     id={"index": i, "type": "break"},
                     style={"margin": 0, "padding": 0}
@@ -246,7 +241,6 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
             word_html_ls.append(dbc.Button(
                 word,
                 color="light",
-                # outline=True,
                 id={"index": i, "type": "word"},
                 style={"margin": 5, "padding": 2}
             ))
@@ -278,7 +272,6 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
                         minRows=1,
                         autosize=True,
                         style={"margin": 10},
-                        #className="input-sizer stacked"
                     )),
                 ], align="center", className="g-0") # zero gutter between columns
             )
@@ -315,7 +308,6 @@ def input_submission(word_click_ls, break_click_ls, txt, data_store):
                     minRows=1,
                     autosize=True,
                     style={"margin": 10},
-                    #className="input-sizer stacked"
                 )),
             ], align="center", className="g-0") # zero gutter between columns
         )
