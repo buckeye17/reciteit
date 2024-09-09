@@ -4,10 +4,11 @@ import string
 # third party Python packages
 import dash
 from dash import html
-from dash import dcc
+from dash import dcc, _dash_renderer
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from dash.dependencies import Input, Output, State, MATCH, ALL
+_dash_renderer._set_react_version("18.2.0")
 
 # Create app
 FONT_AWESOME = "https://use.fontawesome.com/releases/v6.0.0/css/all.css"
@@ -23,7 +24,7 @@ app = dash.Dash(
 server = app.server
 
 # Define Layout
-app.layout = dbc.Container(
+app.layout = dmc.MantineProvider(dbc.Container(
     fluid=True,
     children=[
 
@@ -156,7 +157,7 @@ app.layout = dbc.Container(
         active_tab="input_tab",
         style={"margin-bottom": "15px"}),
     ],
-)
+))
 
 
 @app.callback(
@@ -420,6 +421,3 @@ def get_unit_breaks(txt, data_store):
                 unit_ls.sort()
     
     return unit_ls
-
-if __name__ == "__main__":
-    app.run_server(host="0.0.0.0", debug=False)
